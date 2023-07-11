@@ -5,6 +5,21 @@
 #include <adv3.h>
 #include <en_us.h>
 
+keywordActionList: PreinitObject
+	_list = nil
+
+	execute() {
+		_list = new Vector();
+		forEachInstance(KeywordAction, function(o) {
+			_list.append(o);
+		});
+	}
+
+	match(toks, first) {
+		return(nil);
+	}
+;
+
 modify PendingCommandToks
 	executePending(targetActor) {
 		keywordActionExec.execute(targetActor, issuer_, tokens_,
@@ -118,7 +133,7 @@ keywordActionExec: object
 			dstActor) != nil
 		});
 		if(lst.length() == 0) {
-			handleEmptyActionList(dstActor, srcActor, toks, first);
+			handleEmptyActionList(first);
 			return(nil);
 		}
 
@@ -198,7 +213,7 @@ keywordActionExec: object
 		return(true);
 	}
 
-	handleEmptyActionList(dstActor, srcActor, toks, first) {
+	handleEmptyActionList(first) {
 		local i, lst;
 
 		if(first) {
@@ -219,8 +234,14 @@ keywordActionExec: object
 			dstActor.notifyParseFailure(srcActor,
 				&specialTopicInactive, []);
 		} else {
+			if(handleKeywordActions(first))
+				return;
 			dstActor.notifyParseFailure(srcActor,
 				&commandNotUnderstood, []);
 		}
+	}
+
+	handleKeywordActions(first) {
+		return(keywordActionList.match(toks, first));
 	}
 ;

@@ -5,10 +5,10 @@
 // Uncomment to enable debugging options.
 //#define __DEBUG_KEYWORD_ACTION
 
-#define DefineKeywordAction(name, cls) \
+#define DefineKeywordAction(name, cls, vrb, args...) \
 	DefineTActionSub(name, KeywordAction); \
-	VerbRule(name) singleDobj: name##Action \
-	verbPhrase = 'act/acting (what)' \
+	VerbRule(name) vrb singleDobj: name##Action \
+	verbPhrase = toString(vrb) + '/' + toString(vrb) + 'ing' + ' (what)' \
 	keywordActionClass = cls
 
 // Don't comment out, used for dependency checking.
