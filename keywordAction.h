@@ -7,8 +7,9 @@
 
 #define DefineKeywordAction(name, cls, vrb, args...) \
 	DefineTActionSub(name, KeywordAction); \
-	VerbRule(name) vrb singleDobj: name##Action \
+	VerbRule(name) [badness 999] singleDobj: name##Action \
 	verbPhrase = toString(vrb) + '/' + toString(vrb) + 'ing' + ' (what)' \
+	keywordActionID = toString(vrb) \
 	keywordActionClass = cls
 
 // Don't comment out, used for dependency checking.

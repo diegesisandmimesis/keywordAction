@@ -10,11 +10,14 @@ keywordActionModuleID: ModuleID {
         listingOrder = 99
 }
 
+modify Action
+	keywordActionFailed = nil
+	keywordActionID = nil
+;
+
 class KeywordAction: TAction
 	// The class of objects, if any, this action applies to.
 	keywordActionClass = nil
-
-	resolved = nil
 
 	// See if our dobjList_ contains any objects of the class
 	// defined above.  If it doesn't, then we mark the results
@@ -22,47 +25,47 @@ class KeywordAction: TAction
 	// for the parser to pick from, it will prefer them over us.
 	//
 	resolveKeywordAsAction(srcActor, dstActor, results) {
-		if((dobjList_ == nil) || (keywordActionClass == nil))
-			return(nil);
+		local r;
 
-		resolved = nil;
+		if((dobjList_ == nil) || (keywordActionClass == nil))
+			return;
+
+		r = nil;
 		dobjList_.forEach(function(o) {
 			if(o.obj_ && o.obj_.ofKind(keywordActionClass))
-				resolved = true;
+				r = true;
 		});
 
-		if(resolved != true) {
-			//aioSay('Nope.\n ');
-			//results.unknownNounPhrase(self, resolver);
-			results.noteWeakPhrasing(100);
+		if(r != true) {
+			results.noVocabMatch(self, '');
 		}
-
-		return(resolved);
 	}
 
 	// We need to call resolveNounsAsVerbs() after inherited()
 	// because the parent method is what will populate dobjList_.
 	resolveNouns(srcActor, dstActor, results) {
 		inherited(srcActor, dstActor, results);
-		return(resolveKeywordAsAction(srcActor, dstActor, results));
+		resolveKeywordAsAction(srcActor, dstActor, results);
 	}
 ;
 
-class KeywordActionException: ParseFailureException
-;
+// As written our custom exceptions are handled exactly as if they're
+// standard ParseFailureExceptions, but we use a new exception class
+// anyway, just to make it easier to modify.
+class KeywordActionException: ParseFailureException;
 
-/*
 DefineTAction(KeywordActionCatchAll);
 VerbRule(KeywordActionCatchAll)
-	[badness 500 ] singleDobj: KeywordActionCatchAllAction
+	[badness 999] singleDobj: KeywordActionCatchAllAction
 	verbPhrase = 'catch/catching (what)'
+
+	keywordActionID = 'catch-all'
+
+	keywordActionFailed = nil
 
 	resolveNouns(srcActor, dstActor, results) {
 		inherited(srcActor, dstActor, results);
-		//throw new KeywordActionException(&commandNotUnderstood);
-		aioSay('Catch all.\n ');
-		results.noteBadPrep();
-		results.noteNounSlots(0);
+		results.noMatch(self, '');
+		keywordActionFailed = true;
 	}
 ;
-*/

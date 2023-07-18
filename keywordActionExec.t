@@ -5,21 +5,6 @@
 #include <adv3.h>
 #include <en_us.h>
 
-keywordActionList: PreinitObject
-	_list = nil
-
-	execute() {
-		_list = new Vector();
-		forEachInstance(KeywordAction, function(o) {
-			_list.append(o);
-		});
-	}
-
-	match(toks, first) {
-		return(nil);
-	}
-;
-
 modify PendingCommandToks
 	executePending(targetActor) {
 		keywordActionExec.execute(targetActor, issuer_, tokens_,
@@ -43,6 +28,7 @@ keywordActionExec: object
 
 	toks = nil
 
+	// Clear out all of our properties.
 	clearState() {
 		action = nil;
 		match = nil;
@@ -61,23 +47,37 @@ keywordActionExec: object
 		toks = nil;
 	}
 
+	// Drop-in replacement for adv3's executeCommand().
+	// Should only be called from PendingCommandToks.executePending().
 	execute(dst, src, t, first) {
 		local r;
 
+		// Start from scratch every time we're called.
 		clearState();
 
+		// Remember most of our arguments.
 		srcActor = src;
 		dstActor = dst;
 		toks = t;
 
 		libGlobal.enableSenseCache();
-		
 		setSenseContext(first);
 
+		// More or less equivalent to the parseTokenLoop: loop
+		// from executeCommand().  We loop through the tokens
+		// until we're done or something throws an exception.
 		r = true;
 		while(r) {
 			try {
 				r = parseLoop(first);
+			}
+			// This is our addition to the try/catch block.
+			// As written it's exactly the same as a generic
+			// ParseFailureException, but we break it out
+			// to make it easier to modify later.
+			catch(KeywordActionException kaExc) {
+				kaExc.notifyActor(dstActor, srcActor);
+				return;
 			}
 			catch(ParseFailureException rfExc) {
 				rfExc.notifyActor(dstActor, srcActor);
@@ -108,6 +108,10 @@ keywordActionExec: object
 				dstActor = rcsExc.targetActor_;
 				dstActor.addPendingCommand(true, srcActor,
 					toks);
+				return;
+			}
+			catch(KeywordActionException kaExc) {
+				aioSay('Whaaaat?\n ');
 				return;
 			}
 		}
@@ -166,6 +170,10 @@ keywordActionExec: object
 			senseContext.setSenseContext(dstActor, sight);
 		}
 
+		if(action.keywordActionFailed == true) {
+			throw new KeywordActionException(&commandNotUnderstood);
+		}
+
 		withCommandTranscript(CommandTranscript, function() {
 			executeAction(dstActor, actorPhrase, srcActor,
 				(actorSpecified && (srcActor != dstActor)),
@@ -210,6 +218,7 @@ keywordActionExec: object
 		actorSpecified = true;
 		toks = match.getCommandTokens();
 		first = nil;
+
 		return(true);
 	}
 
@@ -234,14 +243,8 @@ keywordActionExec: object
 			dstActor.notifyParseFailure(srcActor,
 				&specialTopicInactive, []);
 		} else {
-			if(handleKeywordActions(first))
-				return;
 			dstActor.notifyParseFailure(srcActor,
 				&commandNotUnderstood, []);
 		}
-	}
-
-	handleKeywordActions(first) {
-		return(keywordActionList.match(toks, first));
 	}
 ;
