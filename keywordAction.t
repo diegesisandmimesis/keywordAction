@@ -11,7 +11,6 @@ keywordActionModuleID: ModuleID {
 }
 
 modify Action
-	keywordActionDisambig = nil
 	keywordActionFailed = nil
 	keywordActionID = nil
 ;

@@ -70,6 +70,9 @@ keywordActionExec: object
 		dstActor = nil;
 
 		toks = nil;
+
+		// Clear the disambiguator's state as well.
+		keywordActionDisambig.clearState();
 	}
 
 	// Drop-in replacement for adv3's executeCommand().
@@ -103,19 +106,23 @@ keywordActionExec: object
 			// to make it easier to modify later.
 			catch(KeywordActionException kaExc) {
 				kaExc.notifyActor(dstActor, srcActor);
+				clearState();
 				return;
 			}
 			catch(ParseFailureException rfExc) {
 				rfExc.notifyActor(dstActor, srcActor);
+				clearState();
 				return;
 			}
 			catch(CancelCommandLineException ccExc) {
 				if(nextCommandTokens != nil)
 					dstActor.getParserMessageObj()
 						.explainCancelCommandLine();
+				clearState();
 				return;
 			}
 			catch(TerminateCommandException tcExc) {
+				clearState();
 				return;
 			}
 			catch(RetryCommandTokensException rctExc) {
@@ -134,6 +141,7 @@ keywordActionExec: object
 				dstActor = rcsExc.targetActor_;
 				dstActor.addPendingCommand(true, srcActor,
 					toks);
+				clearState();
 				return;
 			}
 		}
