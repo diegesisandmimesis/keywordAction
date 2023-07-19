@@ -11,6 +11,7 @@ keywordActionModuleID: ModuleID {
 }
 
 modify Action
+	keywordActionDisambig = nil
 	keywordActionFailed = nil
 	keywordActionID = nil
 ;
@@ -35,6 +36,9 @@ class KeywordAction: TAction
 			if(o.obj_ && o.obj_.ofKind(keywordActionClass))
 				r = true;
 		});
+
+		if(keywordActionDisambigState.get() != nil)
+			r = nil;
 
 		if(r != true) {
 			results.noVocabMatch(self, '');

@@ -2,6 +2,27 @@
 //
 // keywordActionExec.t
 //
+//	This is a replacement for adv3's default executeCommand() function.
+//	It is MOSTLY logically equivalent to executeCommand(), with a couple
+//	additions for the keywordAction module.  The code has also been
+//	re-organized to make further updates/modification simpler (hopefully).
+//
+//	The code from executeCommand() is found in lib/adv3/exec.t in the
+//	TADS3 source.  The original code carries the following copyright
+//	message:
+//
+//	/* 
+//	 *   Copyright (c) 2000, 2006 Michael J. Roberts.  All Rights Reserved. 
+//	 *   
+//	 *   TADS 3 Library: command execution
+//	 *   
+//	 *   This module defines functions that perform command execution.  
+//	 */
+//
+//	The keywordAction module is distributed under the MIT license, a copy
+//	of which can be found in LICENSE.txt in the top level of the module
+//	source.
+//
 #include <adv3.h>
 #include <en_us.h>
 
@@ -21,6 +42,8 @@ keywordActionExec: object
 	nextIdx = nil
 	rankings = nil
 
+	first = nil
+
 	srcActor = nil
 	dstActor = nil
 	actorPhrase = nil
@@ -38,6 +61,8 @@ keywordActionExec: object
 		nextIdx = nil;
 		rankings = nil;
 
+		first = nil;
+
 		actorPhrase = nil;
 		actorSpecified = nil;
 
@@ -49,19 +74,20 @@ keywordActionExec: object
 
 	// Drop-in replacement for adv3's executeCommand().
 	// Should only be called from PendingCommandToks.executePending().
-	execute(dst, src, t, first) {
+	execute(dst, src, t, fst) {
 		local r;
 
 		// Start from scratch every time we're called.
 		clearState();
 
-		// Remember most of our arguments.
+		// Remember our arguments.
 		srcActor = src;
 		dstActor = dst;
 		toks = t;
+		first = fst;
 
 		libGlobal.enableSenseCache();
-		setSenseContext(first);
+		setSenseContext();
 
 		// More or less equivalent to the parseTokenLoop: loop
 		// from executeCommand().  We loop through the tokens
@@ -69,7 +95,7 @@ keywordActionExec: object
 		r = true;
 		while(r) {
 			try {
-				r = parseLoop(first);
+				r = parseLoop();
 			}
 			// This is our addition to the try/catch block.
 			// As written it's exactly the same as a generic
@@ -110,14 +136,10 @@ keywordActionExec: object
 					toks);
 				return;
 			}
-			catch(KeywordActionException kaExc) {
-				aioSay('Whaaaat?\n ');
-				return;
-			}
 		}
 	}
 
-	setSenseContext(first) {
+	setSenseContext() {
 		if(first && (srcActor != dstActor)
 			&& srcActor.revertTargetActorAtEndOfSentence) {
 			dstActor = srcActor;
@@ -125,10 +147,8 @@ keywordActionExec: object
 		}
 	}
 
-	parseLoop(first) {
+	getCommandList() {
 		local lst;
-
-		extraTokens = [];
 
 		lst = (first ? firstCommandPhrase : commandPhrase)
 			.parseTokens(toks, cmdDict);
@@ -137,11 +157,23 @@ keywordActionExec: object
 			dstActor) != nil
 		});
 		if(lst.length() == 0) {
-			handleEmptyActionList(first);
+			handleEmptyActionList();
 			return(nil);
 		}
 
 		dbgShowGrammarList(lst);
+
+		return(lst);
+	}
+
+	parseLoop() {
+		local lst;
+
+		extraTokens = [];
+
+		if((lst = getCommandList()) == nil)
+			return(nil);
+
 		rankings = CommandRanking.sortByRanking(lst,
 			srcActor, dstActor);
 		match = rankings[1].match;
@@ -156,7 +188,7 @@ keywordActionExec: object
 		extraTokens = toks.sublist(extraIdx);
 
 		if(match.hasTargetActor())
-			return(handleActorMatch(match, toks, first));
+			return(handleActorMatch(match));
 
 		action = match.resolveFirstAction(srcActor, dstActor);
 		if(rankings[1].unknownWordCount != 0) {
@@ -170,7 +202,8 @@ keywordActionExec: object
 			senseContext.setSenseContext(dstActor, sight);
 		}
 
-		if(action.keywordActionFailed == true) {
+		if((action.keywordActionFailed == true) 
+			&& (keywordActionDisambigState.get() == nil)) {
 			throw new KeywordActionException(&commandNotUnderstood);
 		}
 
@@ -190,7 +223,7 @@ keywordActionExec: object
 		return(nil);
 	}
 
-	handleActorMatch(match, toks, first) {
+	handleActorMatch(match) {
 		local actorResults;
 
 		if(!actorSpecified && (srcActor != dstActor)) {
@@ -222,7 +255,7 @@ keywordActionExec: object
 		return(true);
 	}
 
-	handleEmptyActionList(first) {
+	handleEmptyActionList() {
 		local i, lst;
 
 		if(first) {
@@ -246,5 +279,23 @@ keywordActionExec: object
 			dstActor.notifyParseFailure(srcActor,
 				&commandNotUnderstood, []);
 		}
+	}
+;
+
+keywordActionDisambigState: object
+	_flag = nil
+	set() { _flag = true; }
+	unset() { _flag = nil; }
+	get() { return(_flag == true); }
+;
+
+StringPreParser
+	doParsing(str, which) {
+		if(which != rmcCommand) {
+			keywordActionDisambigState.set();
+		} else {
+			keywordActionDisambigState.unset();
+		}
+		return(str);
 	}
 ;
