@@ -33,7 +33,11 @@ modify PendingCommandToks
 	}
 ;
 
-keywordActionExec: object
+class KeywordActionSingleton: KeywordActionObject;
+
+keywordActionExec: KeywordActionSingleton
+	keywordActionID = 'keywordActionExec'
+
 	action = nil
 	match = nil
 	extraIdx = nil
@@ -105,8 +109,14 @@ keywordActionExec: object
 			// ParseFailureException, but we break it out
 			// to make it easier to modify later.
 			catch(KeywordActionException kaExc) {
-				kaExc.notifyActor(dstActor, srcActor);
+				local dst, f, src, t;
+				dst = dstActor;
+				src = srcActor;
+				f = first;
+				t = toks;
 				clearState();
+				executeCommand(dst, src, t, f);
+				//kaExc.notifyActor(dstActor, srcActor);
 				return;
 			}
 			catch(ParseFailureException rfExc) {
@@ -155,18 +165,58 @@ keywordActionExec: object
 		}
 	}
 
-	getCommandList() {
+	_getCommandList(flg, dict?) {
+		local lst, prod;
+
+		prod = (first ? firstKeywordActionPhrase
+			: keywordActionPhrase);
+
+		if(keywordActionDisambigState.get() != nil) {
+			_debug('in disabiguation, not using keyword actions');
+			throw new KeywordActionException(&commandNotUnderstood);
+		}
+
+		_debug('evaluating keyword actions');
+
+		lst = _tryParseTokens(prod, dict);
+		if(lst.length() == 0) {
+			_debug('no keyword action match');
+			throw new KeywordActionException(&commandNotUnderstood);
+		}
+
+		return(lst);
+	}
+
+	_tryParseTokens(prod, dict?) {
 		local lst;
 
-		lst = (first ? firstCommandPhrase : commandPhrase)
-			.parseTokens(toks, cmdDict);
+		lst = prod.parseTokens(toks, (dict ? dict : cmdDict));
+
+		_debug('\tparseTokens() returned <<toString(lst.length)>>
+			actions');
 
 		lst = lst.subset({ x: x.resolveFirstAction(srcActor,
 			dstActor) != nil
 		});
+
+		_debug('\tresolveFirstAction() returned <<toString(lst.length)>>
+			actions');
+
+		return(lst);
+	}
+
+	getCommandList(dict?) {
+		local lst;
+
+		lst = _getCommandList(dict);
+
+		_debugList(lst);
+		dbgShowGrammarList(lst);
+
 		if(lst.length() == 0) {
-			handleEmptyActionList();
-			return(nil);
+			_debug('_getCommandList() produced zero-length
+				list');
+			throw new KeywordActionException(&commandNotUnderstood);
 		}
 
 		dbgShowGrammarList(lst);
@@ -182,10 +232,17 @@ keywordActionExec: object
 		if((lst = getCommandList()) == nil)
 			return(nil);
 
+		_debug('getCommandList() returned
+			<<toString(lst.length())>> candidates');
+
 		rankings = CommandRanking.sortByRanking(lst,
 			srcActor, dstActor);
+
 		match = rankings[1].match;
+
+		_debugObject(match, 'match = ');
 		dbgShowGrammarWithCaption('Winner', match);
+
 		nextIdx = match.getNextCommandIndex();
 		nextCommandTokens = toks.sublist(nextIdx);
 
@@ -204,6 +261,8 @@ keywordActionExec: object
 				new OopsResults(srcActor, dstActor));
 		}
 
+		action._actionInfo();
+
 		if((action != nil) && action.isConversational(srcActor)) {
 			senseContext.setSenseContext(srcActor, sight);
 		} else if(actorSpecified && (srcActor != dstActor)) {
@@ -220,6 +279,7 @@ keywordActionExec: object
 				(actorSpecified && (srcActor != dstActor)),
 				action);
 		});
+
 		if(nextCommandTokens != nil) {
 			dstActor.addFirstPendingCommand(match.isEndOfSentence(),
 				srcActor, nextCommandTokens);
@@ -247,6 +307,7 @@ keywordActionExec: object
 
 		actorResults = new ActorResolveResults();
 		actorResults.setActors(dstActor, srcActor);
+
 
 		match.resolveNouns(srcActor, dstActor, actorResults);
 		dstActor = match.getTargetActor();

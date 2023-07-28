@@ -1,6 +1,11 @@
 #charset "us-ascii"
+//
+// keywordAction.t
+//
 #include <adv3.h>
 #include <en_us.h>
+
+#include "keywordAction.h"
 
 // Module ID for the library
 keywordActionModuleID: ModuleID {
@@ -13,9 +18,12 @@ keywordActionModuleID: ModuleID {
 modify Action
 	keywordActionFailed = nil
 	keywordActionID = nil
+
+	_actionInfo() {}
 ;
 
-class KeywordAction: TAction
+
+class KeywordActionBase: KeywordActionObject
 	// The class of objects, if any, this action applies to.
 	keywordActionClass = nil
 
@@ -41,6 +49,8 @@ class KeywordAction: TAction
 
 		if(r != true) {
 			results.noVocabMatch(self, '');
+			keywordActionFailed = true;
+			_debug('resolveKeywordAsAction() failed');
 		}
 	}
 
@@ -48,18 +58,26 @@ class KeywordAction: TAction
 	// because the parent method is what will populate dobjList_.
 	resolveNouns(srcActor, dstActor, results) {
 		inherited(srcActor, dstActor, results);
+//aioSay('resolveNouns() on <<toString(keywordActionID)>>\n ');
 		resolveKeywordAsAction(srcActor, dstActor, results);
 	}
+
+	//resolveAction(srcActor, dstActor) { aioSay('resolveAction()\n '); return(self); }
+	//resolveFirstAction(srcActor, dstActor) { aioSay('resolveFirstAction()\n '); return(self); }
+/*
+	getNextCommandIndex() {
+		_debugObject(cmd_, 'getNextCommandIndex(): cmd_ = ');
+		return(inherited());
+	}
+*/
 ;
 
-// As written our custom exceptions are handled exactly as if they're
-// standard ParseFailureExceptions, but we use a new exception class
-// anyway, just to make it easier to modify.
-class KeywordActionException: ParseFailureException;
+class KeywordTAction: KeywordActionBase, TAction;
 
+/*
 DefineTAction(KeywordActionCatchAll);
-VerbRule(KeywordActionCatchAll)
-	[badness 999] singleDobj: KeywordActionCatchAllAction
+KeywordActionRule(KeywordActionCatchAll)
+	singleDobj: KeywordActionCatchAllAction
 	verbPhrase = 'catch/catching (what)'
 
 	keywordActionID = 'catch-all'
@@ -71,4 +89,12 @@ VerbRule(KeywordActionCatchAll)
 		results.noMatch(self, '');
 		keywordActionFailed = true;
 	}
+;
+*/
+
+class KeywordActionObject: object
+	keywordActionID = nil
+	_debug(msg?) {}
+	_debugList(lst) {}
+	_debugObject(obj, lbl?) {}
 ;
