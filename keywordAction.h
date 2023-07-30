@@ -6,6 +6,8 @@
 //#define __DEBUG_KEYWORD_ACTION
 
 #define KeywordActionRule(tag) grammar keywordActionPredicate(tag):
+#define singleKeywordDobj singleKeyword->dobjMatch
+
 //#define KeywordActionRule(tag) grammar predicate(tag):
 
 #define KEYWORD_BADNESS 999

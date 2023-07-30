@@ -33,9 +33,7 @@ modify PendingCommandToks
 	}
 ;
 
-class KeywordActionSingleton: KeywordActionObject;
-
-keywordActionExec: KeywordActionSingleton
+keywordActionExec: KeywordActionObject
 	keywordActionID = 'keywordActionExec'
 
 	action = nil
@@ -76,7 +74,7 @@ keywordActionExec: KeywordActionSingleton
 		toks = nil;
 
 		// Clear the disambiguator's state as well.
-		keywordActionDisambig.clearState();
+		//keywordActionDisambig.clearState();
 	}
 
 	// Drop-in replacement for adv3's executeCommand().
@@ -110,6 +108,8 @@ keywordActionExec: KeywordActionSingleton
 			// to make it easier to modify later.
 			catch(KeywordActionException kaExc) {
 				local dst, f, src, t;
+
+				_debug('===KeywordActionException===');
 				dst = dstActor;
 				src = srcActor;
 				f = first;
@@ -120,11 +120,13 @@ keywordActionExec: KeywordActionSingleton
 				return;
 			}
 			catch(ParseFailureException rfExc) {
+				_debug('===ParseFailureException===');
 				rfExc.notifyActor(dstActor, srcActor);
 				clearState();
 				return;
 			}
 			catch(CancelCommandLineException ccExc) {
+				_debug('===CancelCommandLineException===');
 				if(nextCommandTokens != nil)
 					dstActor.getParserMessageObj()
 						.explainCancelCommandLine();
@@ -132,16 +134,19 @@ keywordActionExec: KeywordActionSingleton
 				return;
 			}
 			catch(TerminateCommandException tcExc) {
+				_debug('===TerminateCommandException===');
 				clearState();
 				return;
 			}
 			catch(RetryCommandTokensException rctExc) {
+				_debug('===RetryCommandTokensException===');
 				toks = rctExc.newTokens_ + extraTokens;
 				r = true;
 			}
 			catch(ReplacementCommandStringException rcsExc) {
 				local str;
 	
+				_debug('===ReplacementCommandStringException===');
 				str = rcsExc.newCommand_;
 				if(str == nil)
 					return;
@@ -257,11 +262,10 @@ keywordActionExec: KeywordActionSingleton
 
 		action = match.resolveFirstAction(srcActor, dstActor);
 		if(rankings[1].unknownWordCount != 0) {
+			_debug('===unknownWordCound===');
 			match.resolveNouns(srcActor, dstActor,
 				new OopsResults(srcActor, dstActor));
 		}
-
-		action._actionInfo();
 
 		if((action != nil) && action.isConversational(srcActor)) {
 			senseContext.setSenseContext(srcActor, sight);
@@ -275,6 +279,7 @@ keywordActionExec: KeywordActionSingleton
 		}
 
 		withCommandTranscript(CommandTranscript, function() {
+			_debug('===executeAction===');
 			executeAction(dstActor, actorPhrase, srcActor,
 				(actorSpecified && (srcActor != dstActor)),
 				action);

@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// keywordActionDisambig.t
+// keywordActionDisambigObj.t
 //
 //	This is a replacement for adv3's default tryAskingForObject() function.
 //	It is MOSTLY logically equivalent to tryAskingForObject(), with a couple
@@ -35,6 +35,7 @@
 // the usage for all the existing callers in adv3.
 replace
 tryAskingForObject(srcActor, dstActor, resolver, results, responseProd) {
+aioSay('\n===REPLACEMENT DISAMBIG===\n ');
 	return(keywordActionDisambig.disambigObj(srcActor, dstActor,
 		resolver, results, responseProd));
 }
@@ -44,7 +45,7 @@ tryAskingForObject(srcActor, dstActor, resolver, results, responseProd) {
 // but it makes it much easier to tweak individual bits of the process
 // without having to just replace the whole thing (which is why we're
 // doing this in the first place).
-keywordActionDisambig: object
+keywordActionDisambig: KeywordActionObject
 	// Our properties are mostly equivalent to the variables used
 	// in the default tryAskingForObject().  Making them properties
 	// is just a kludge so we don't have to fiddle around with a lot
@@ -168,6 +169,7 @@ keywordActionDisambig: object
 			catch(RetryCommandTokensException exc) {
 				toks = exc.newTokens_;
 
+_debug('===RetryCommandTokensException===');
 				str = cmdTokenizer.buildOrigText(toks);
 
 				return(nil);
@@ -176,6 +178,7 @@ keywordActionDisambig: object
 
 		if((rankings[1].nonMatchCount != 0)
 			&& (rankings[1].miscWordListCount != 0)) {
+_debug('===ReplacementCommandStringException 1===');
 				throw new ReplacementCommandStringException(str,
 					nil, nil);
 		}
@@ -198,6 +201,7 @@ keywordActionDisambig: object
 			// the bare noun phrase.
 			if(!match.isSpecialResponseMatch
 				&& (keywordActionDisambigState.get() == nil)) {
+_debug('===ReplacementCommandStringException 2===');
 				throw new ReplacementCommandStringException(str,
 					nil, nil);
 			}

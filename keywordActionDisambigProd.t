@@ -1,49 +1,12 @@
 #charset "us-ascii"
 //
-// keywordActionProd.t
+// keywordActionDisambigProd.t
 //
 #include <adv3.h>
 #include <en_us.h>
 
 #include "keywordAction.h"
 
-class FirstKeywordActionProd: FirstCommandProd;
-class KeywordActionProd: CommandProd;
-class KeywordActionProdWithDefiniteConj: CommandProdWithDefiniteConj;
-class KeywordActionProdWithAmbiguousConj: CommandProdWithAmbiguousConj;
-
-class SingleKeywordProd: SingleNounProd;
-
-grammar keywordActionPhrase(defineConj)
-	: keywordActionPredicate->cmd_
-		| keywordActionPredicate->cmd_ commandOnlyConjunction->conj_ *
-	: KeywordActionProdWithDefiniteConj
-;
-
-grammar keywordActionPhrase(ambiguousConj)
-	: keywordActionPredicate->cmd1_
-		commandOrNounConjunction->conj_ keywordActionPhrase->cmd2_
-	: KeywordActionProdWithAmbiguousConj
-;
-
-grammar firstKeywordActionPhrase(commandOnly)
-	: keywordActionPhrase->cmd_
-	: FirstKeywordActionProd
-;
-
-/*
-grammar singleKeyword(normal)
-	: singleKeywordOnly->np_
-	: LayeredKeywordPhraseProd
-;
-
-grammar singleKeywordOnly(main)
-	: terminalKeywordPhrase->np_
-	: SingleKeywordProd
-;
-*/
-
-/*
 class KeywordActionDisambigProd: DisambigProd;
 
 grammar keywordActionDisambigPhrase(all)
@@ -267,4 +230,3 @@ grammar keywordActionCompleteNounPhraseWithAll(main)
 	: 'all' | 'everything'
 	: EverythingProd
 ;
-*/

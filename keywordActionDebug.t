@@ -9,14 +9,11 @@
 
 #include <reflect.t>
 
+/*
 modify Action
 	keywordActionID = nil
 
 	_debug(msg?) {
-/*
-		aioSay('\n<<(keywordActionID ? '<<keywordActionID>>: '
-			: '')>><<msg>>\n ');
-*/
 		aioSay('\n<<reflectionServices.valToSymbol(self)>>: '
 			+ '<<msg>>\n ');
 	}
@@ -45,6 +42,7 @@ modify Action
 		_actionInfoObj(self);
 	}
 ;
+*/
 
 modify KeywordActionObject
 	_debug(msg?) {
@@ -87,6 +85,26 @@ modify KeywordActionObject
 	_debugObject(obj, lbl?) {
 		_debug((lbl ? lbl : '')
 			+ '<<reflectionServices.valToSymbol(obj)>>');
+	}
+
+	_debugObjectFull(obj) {
+		local l;
+
+		if(obj == nil) {
+			_debug('nil object');
+			return;
+		}
+
+		if((l = obj.getPropList()) == nil) {
+			_debug('\t[no properties]\n ');
+			return;
+		}
+		l.forEach(function(o) {
+			if(!obj.propDefined(o, PropDefAny))
+				return;
+			_debug('\t' + reflectionServices.valToSymbol(o) + ' = '
+				+ reflectionServices.valToSymbol(obj.(o)));
+		});
 	}
 ;
 
