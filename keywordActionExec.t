@@ -355,21 +355,3 @@ keywordActionExec: KeywordActionObject
 		}
 	}
 ;
-
-keywordActionDisambigState: object
-	_flag = nil
-	set() { _flag = true; }
-	unset() { _flag = nil; }
-	get() { return(_flag == true); }
-;
-
-StringPreParser
-	doParsing(str, which) {
-		if(which != rmcCommand) {
-			keywordActionDisambigState.set();
-		} else {
-			keywordActionDisambigState.unset();
-		}
-		return(str);
-	}
-;

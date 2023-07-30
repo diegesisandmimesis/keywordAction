@@ -9,41 +9,6 @@
 
 #include <reflect.t>
 
-/*
-modify Action
-	keywordActionID = nil
-
-	_debug(msg?) {
-		aioSay('\n<<reflectionServices.valToSymbol(self)>>: '
-			+ '<<msg>>\n ');
-	}
-
-	_actionInfoObj(obj) {
-		local l;
-
-		if(obj == nil) {
-			_debug('nil object');
-			return;
-		}
-
-		if((l = obj.getPropList()) == nil) {
-			_debug('\t[no properties]\n ');
-			return;
-		}
-		l.forEach(function(o) {
-			if(!obj.propDefined(o, PropDefAny))
-				return;
-			_debug('\t' + reflectionServices.valToSymbol(o) + ' = '
-				+ reflectionServices.valToSymbol(obj.(o)));
-		});
-	}
-
-	_actionInfo() {
-		_actionInfoObj(self);
-	}
-;
-*/
-
 modify KeywordActionObject
 	_debug(msg?) {
 		aioSay('\n<<(keywordActionID ? '<<keywordActionID>>: '
