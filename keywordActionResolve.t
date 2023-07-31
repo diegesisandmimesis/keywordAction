@@ -80,8 +80,9 @@ modify BasicResolveResults
 			retryParse:
 				local prodList = mainDisambigPhrase.parseTokens(toks, cmdDict);
 
-				if(prodList == [])
+				if(prodList == []) {
 					throw new ReplacementCommandStringException(str, nil, nil);
+				}
 
 				dbgShowGrammarList(prodList);
 				local disResolver = new DisambigResolver(txt, matchList, fullMatchList, fullMatchList, resolver, dist);
@@ -179,7 +180,42 @@ modify BasicResolveResults
 
 			stillToResolve = stillToResolve.sublist(2);
 		}
+_debugList(resultList);
+//__debugTool.breakpoint();
+
 
 		return(resultList);
+	}
+	_debugList(lst) {
+		local l;
+
+		if(lst == nil) {
+			_debug('_debugList():  nil list');
+			return;
+		}
+		_debug('=====_debugList() start=====');
+		_debug('lst.length = <<toString(lst.length)>>');
+
+		lst.forEach(function(obj) {
+			if(obj == nil) {
+				_debug('object is nil');
+				return;
+			}
+			_debug(reflectionServices.valToSymbol(obj));
+			if((l = obj.getPropList()) == nil) {
+				_debug('no properties');
+				return;
+			}
+			l.forEach(function(o) {
+				if(!obj.propDefined(o, PropDefAny))
+					return;
+				_debug('\t'
+					+ reflectionServices.valToSymbol(o)
+					+ ' = '
+					+ reflectionServices.valToSymbol(
+						obj.(o)));
+			});
+		});
+		_debug('=====_debugList() end=====');
 	}
 ;

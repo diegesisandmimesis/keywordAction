@@ -26,7 +26,7 @@
 #include <adv3.h>
 #include <en_us.h>
 
-#ifdef KEYWORD_ACTION_EXEC
+#ifdef KEYWORD_ACTION_NEW_GRAMMAR
 
 modify PendingCommandToks
 	executePending(targetActor) {
@@ -281,10 +281,11 @@ keywordActionExec: KeywordActionObject
 		}
 
 		withCommandTranscript(CommandTranscript, function() {
-			_debug('===executeAction===');
+			_debug('===executeAction start===');
 			executeAction(dstActor, actorPhrase, srcActor,
 				(actorSpecified && (srcActor != dstActor)),
 				action);
+			_debug('===executeAction end===');
 		});
 
 		if(nextCommandTokens != nil) {

@@ -7,7 +7,7 @@
 
 #ifdef __DEBUG_KEYWORD_ACTION
 
-#include <reflect.t>
+//#include <reflect.t>
 
 modify KeywordActionObject
 	_debug(msg?) {
