@@ -26,6 +26,8 @@
 #include <adv3.h>
 #include <en_us.h>
 
+#ifdef KEYWORD_ACTION_EXEC
+
 modify PendingCommandToks
 	executePending(targetActor) {
 		keywordActionExec.execute(targetActor, issuer_, tokens_,
@@ -355,3 +357,5 @@ keywordActionExec: KeywordActionObject
 		}
 	}
 ;
+
+#endif // KEYWORD_ACTION_EXEC

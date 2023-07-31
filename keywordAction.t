@@ -58,11 +58,8 @@ class KeywordActionBase: KeywordActionObject
 	// We need to call resolveNounsAsVerbs() after inherited()
 	// because the parent method is what will populate dobjList_.
 	resolveNouns(srcActor, dstActor, results) {
-		_debug('===starting KeywordAction.resolveNouns()===');
 		inherited(srcActor, dstActor, results);
-		_debug('===finished inherited resolveNouns()===');
 		resolveKeywordAsAction(srcActor, dstActor, results);
-		_debug('===finished resolveKeywordAsAction()===');
 	}
 ;
 
