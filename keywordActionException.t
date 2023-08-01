@@ -2,6 +2,11 @@
 //
 // keywordActionException.t
 //
+//	Custom exception for keywordActionExec.
+//
+//	Probably doesn't deserve to be in its own source file, but we might
+//	want to gussy it up later.
+//
 #include <adv3.h>
 #include <en_us.h>
 

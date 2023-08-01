@@ -26,6 +26,13 @@
 #include <adv3.h>
 #include <en_us.h>
 
+// The only place that calls executeCommand() is
+// PendingCommandToks.executePending(), so instead of replacing executeCommand()
+// outright, we implement our own and just call our bespoke version first.
+// This is done in the belief that what we're here for (handling bare noun
+// phrases on the command line) is more straightforward than general command
+// parsing, so we prefer using the stock version instead of our own when
+// possible (because we might have missed some weird corner cases).
 modify PendingCommandToks
 	executePending(targetActor) {
 		keywordActionExec.execute(targetActor, issuer_, tokens_,
@@ -33,9 +40,14 @@ modify PendingCommandToks
 	}
 ;
 
+// Our executeCommand() replacement is a singleton with a bunch of methods.
 keywordActionExec: KeywordActionObject
+	// Debugging identifier
 	keywordActionID = 'keywordActionExec'
 
+	// All the properties are variables from the native executeCommand(),
+	// which we save as properties just to avoid having messy
+	// calling semantics on all of the methods.
 	action = nil
 	match = nil
 	extraIdx = nil
@@ -43,14 +55,11 @@ keywordActionExec: KeywordActionObject
 	nextCommandTokens = nil
 	nextIdx = nil
 	rankings = nil
-
 	first = nil
-
 	srcActor = nil
 	dstActor = nil
 	actorPhrase = nil
 	actorSpecified = nil
-
 	toks = nil
 
 	// Clear out all of our properties.
@@ -72,9 +81,6 @@ keywordActionExec: KeywordActionObject
 		dstActor = nil;
 
 		toks = nil;
-
-		// Clear the disambiguator's state as well.
-		//keywordActionDisambig.clearState();
 	}
 
 	// Drop-in replacement for adv3's executeCommand().
@@ -102,10 +108,12 @@ keywordActionExec: KeywordActionObject
 			try {
 				r = parseLoop();
 			}
-			// This is our addition to the try/catch block.
-			// As written it's exactly the same as a generic
-			// ParseFailureException, but we break it out
-			// to make it easier to modify later.
+			// One of the reasons we bothered to re-implement
+			// executeCommand().  Here we catch the custom
+			// exception we might have thrown elsewhere.  If
+			// we get this, it means we're not going to handle
+			// a keyword action, so we punt things off to
+			// the stock executeCommand().
 			catch(KeywordActionException kaExc) {
 				local dst, f, src, t;
 
@@ -116,7 +124,6 @@ keywordActionExec: KeywordActionObject
 				t = toks;
 				clearState();
 				executeCommand(dst, src, t, f);
-				//kaExc.notifyActor(dstActor, srcActor);
 				return;
 			}
 			catch(ParseFailureException rfExc) {
@@ -162,6 +169,7 @@ keywordActionExec: KeywordActionObject
 		}
 	}
 
+	// Set the sense context, if necessary.
 	setSenseContext() {
 		if(first && (srcActor != dstActor)
 			&& srcActor.revertTargetActorAtEndOfSentence) {
@@ -170,32 +178,16 @@ keywordActionExec: KeywordActionObject
 		}
 	}
 
-	_getCommandList(flg, dict?) {
+	// Returns the list of candidate commands from parseTokens(), if
+	// any.
+	getCommandList(dict?) {
 		local lst, prod;
 
+		// Figure out which production to use.
 		prod = (first ? firstKeywordActionPhrase
 			: keywordActionPhrase);
 
-/*
-		if(keywordActionDisambigState.get() != nil) {
-			_debug('in disabiguation, not using keyword actions');
-			throw new KeywordActionException(&commandNotUnderstood);
-		}
-*/
-
 		_debug('evaluating keyword actions');
-
-		lst = _tryParseTokens(prod, dict);
-		if(lst.length() == 0) {
-			_debug('no keyword action match');
-			throw new KeywordActionException(&commandNotUnderstood);
-		}
-
-		return(lst);
-	}
-
-	_tryParseTokens(prod, dict?) {
-		local lst;
 
 		lst = prod.parseTokens(toks, (dict ? dict : cmdDict));
 
@@ -209,9 +201,18 @@ keywordActionExec: KeywordActionObject
 		_debug('\tresolveFirstAction() returned <<toString(lst.length)>>
 			actions');
 
+		if(lst.length() == 0) {
+			_debug('no keyword action match');
+			throw new KeywordActionException(&commandNotUnderstood);
+		}
+
+		_debugList(lst);
+		dbgShowGrammarList(lst);
+
 		return(lst);
 	}
 
+/*
 	getCommandList(dict?) {
 		local lst;
 
@@ -230,12 +231,18 @@ keywordActionExec: KeywordActionObject
 
 		return(lst);
 	}
+*/
 
+	// Main parse loop.  More or less equivalent to the labelled loop
+	// inside the native executeCommand().
 	parseLoop() {
 		local lst;
 
 		extraTokens = [];
 
+		// Make sure we can obtain a command list.  The return
+		// is really a placebo, because if the list was nil we'd
+		// have already thrown an exception.
 		if((lst = getCommandList()) == nil)
 			return(nil);
 
@@ -247,7 +254,6 @@ keywordActionExec: KeywordActionObject
 
 		match = rankings[1].match;
 
-		_debugObject(match, 'match = ');
 		dbgShowGrammarWithCaption('Winner', match);
 
 		nextIdx = match.getNextCommandIndex();
@@ -276,7 +282,6 @@ keywordActionExec: KeywordActionObject
 		}
 
 		if((action.keywordActionFailed == true)) {
-			//&& (keywordActionDisambigState.get() == nil)) {
 			throw new KeywordActionException(&commandNotUnderstood);
 		}
 
@@ -315,7 +320,6 @@ keywordActionExec: KeywordActionObject
 
 		actorResults = new ActorResolveResults();
 		actorResults.setActors(dstActor, srcActor);
-
 
 		match.resolveNouns(srcActor, dstActor, actorResults);
 		dstActor = match.getTargetActor();

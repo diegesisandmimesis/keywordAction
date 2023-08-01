@@ -2,18 +2,24 @@
 //
 // keywordActionDebug.t
 //
+//	Debugging methods for the keywordAction stuff.
+//
 #include <adv3.h>
 #include <en_us.h>
 
 #ifdef __DEBUG_KEYWORD_ACTION
 
-//#include <reflect.t>
+#include <reflect.t>
 
 modify KeywordActionObject
+	// Log the passed message.  Prefixes the value of the
+	// object's keywordActionID, if set.
 	_debug(msg?) {
 		aioSay('\n<<(keywordActionID ? '<<keywordActionID>>: '
 			: '')>><<msg>>\n ');
 	}
+
+	// Debug a list.
 	_debugList(lst) {
 		local l;
 
@@ -47,11 +53,13 @@ modify KeywordActionObject
 		_debug('=====_debugList() end=====');
 	}
 
+	// Debug an object, shallowly.
 	_debugObject(obj, lbl?) {
 		_debug((lbl ? lbl : '')
 			+ '<<reflectionServices.valToSymbol(obj)>>');
 	}
 
+	// Debug an object, fully.
 	_debugObjectFull(obj) {
 		local l;
 
