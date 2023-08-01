@@ -212,27 +212,6 @@ keywordActionExec: KeywordActionObject
 		return(lst);
 	}
 
-/*
-	getCommandList(dict?) {
-		local lst;
-
-		lst = _getCommandList(dict);
-
-		_debugList(lst);
-		dbgShowGrammarList(lst);
-
-		if(lst.length() == 0) {
-			_debug('_getCommandList() produced zero-length
-				list');
-			throw new KeywordActionException(&commandNotUnderstood);
-		}
-
-		dbgShowGrammarList(lst);
-
-		return(lst);
-	}
-*/
-
 	// Main parse loop.  More or less equivalent to the labelled loop
 	// inside the native executeCommand().
 	parseLoop() {
