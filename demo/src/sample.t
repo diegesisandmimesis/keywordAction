@@ -19,8 +19,6 @@
 #include <adv3.h>
 #include <en_us.h>
 
-//#include <gramprod.h>
-
 #include "keywordAction.h"
 
 versionInfo:    GameID;
@@ -72,10 +70,4 @@ otherRoom: Room 'Other Room'
 DefineKeywordAction(Foo, Pebble);
 DefineKeywordAction(Bar, Rock);
 
-gameMain: GameMainDef
-	initialPlayerChar = me
-	newGame() {
-		//libGlobal.parserDebugMode = true;
-		runGame(true);
-	}
-;
+gameMain: GameMainDef initialPlayerChar = me;
