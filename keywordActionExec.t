@@ -26,8 +26,6 @@
 #include <adv3.h>
 #include <en_us.h>
 
-#ifdef KEYWORD_ACTION_NEW_GRAMMAR
-
 modify PendingCommandToks
 	executePending(targetActor) {
 		keywordActionExec.execute(targetActor, issuer_, tokens_,
@@ -178,10 +176,12 @@ keywordActionExec: KeywordActionObject
 		prod = (first ? firstKeywordActionPhrase
 			: keywordActionPhrase);
 
+/*
 		if(keywordActionDisambigState.get() != nil) {
 			_debug('in disabiguation, not using keyword actions');
 			throw new KeywordActionException(&commandNotUnderstood);
 		}
+*/
 
 		_debug('evaluating keyword actions');
 
@@ -275,8 +275,8 @@ keywordActionExec: KeywordActionObject
 			senseContext.setSenseContext(dstActor, sight);
 		}
 
-		if((action.keywordActionFailed == true) 
-			&& (keywordActionDisambigState.get() == nil)) {
+		if((action.keywordActionFailed == true)) {
+			//&& (keywordActionDisambigState.get() == nil)) {
 			throw new KeywordActionException(&commandNotUnderstood);
 		}
 
@@ -358,5 +358,3 @@ keywordActionExec: KeywordActionObject
 		}
 	}
 ;
-
-#endif // KEYWORD_ACTION_EXEC

@@ -45,8 +45,8 @@ class KeywordActionBase: KeywordActionObject
 				r = true;
 		});
 
-		if(keywordActionDisambigState.get() != nil)
-			r = nil;
+		//if(keywordActionDisambigState.get() != nil)
+			//r = nil;
 
 		if(r != true) {
 			results.noVocabMatch(self, '');
@@ -58,6 +58,7 @@ class KeywordActionBase: KeywordActionObject
 	// We need to call resolveNounsAsVerbs() after inherited()
 	// because the parent method is what will populate dobjList_.
 	resolveNouns(srcActor, dstActor, results) {
+_debug('foo');
 		inherited(srcActor, dstActor, results);
 		resolveKeywordAsAction(srcActor, dstActor, results);
 	}
