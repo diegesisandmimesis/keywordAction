@@ -249,7 +249,7 @@ keywordActionExec: KeywordActionObject
 
 		action = match.resolveFirstAction(srcActor, dstActor);
 		if(rankings[1].unknownWordCount != 0) {
-			_debug('===unknownWordCound===');
+			_debug('===unknownWordCount===');
 			match.resolveNouns(srcActor, dstActor,
 				new OopsResults(srcActor, dstActor));
 		}
