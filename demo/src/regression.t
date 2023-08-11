@@ -25,6 +25,9 @@
 // regression testing logic will work in parallel with an existing game world.
 startRoom: Room 'Void' "This is a featureless void. ";
 +me: Person;
++pebble: Thing 'small round pebble' 'pebble' "A small, round pebble. ";
+
+DefineKeywordAction(Foo, pebble);
 
 versionInfo: GameID;
 gameMain: GameMainDef initialPlayerChar = me;
