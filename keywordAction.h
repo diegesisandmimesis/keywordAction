@@ -5,6 +5,17 @@
 // Uncomment to enable debugging options.
 //#define __DEBUG_KEYWORD_ACTION
 
+// Dependency checking.
+#include "modularExecuteCommand.h"
+#ifndef MODULAR_EXECUTE_COMMAND_H
+#error "This module requires the modularExecuteCommand module."
+#error "https://github.com/diegesisandmimesis/modularExecuteCommand"
+#error "It should be in the same parent directory as this module.  So if"
+#error "keywordAction is in /home/user/tads/keywordAction, then"
+#error "modularExecuteCommand should be in"
+#error "/home/user/tads/modularExecuteCommand ."
+#endif // MODULAR_EXECUTE_COMMAND_H
+
 #define KeywordActionRule(tag) grammar keywordActionPredicate(tag):
 
 #define DefineKeywordAction(name, cls) \

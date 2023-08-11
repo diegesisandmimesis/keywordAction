@@ -14,7 +14,7 @@
 //
 //	Will result in "pebble" by itself being treated as >X PEBBLE:
 //
-//		>X PEBBLE
+//		>PEBBLE
 //		A small, round pebble.
 //
 #include <adv3.h>
