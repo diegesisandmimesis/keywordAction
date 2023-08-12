@@ -1,0 +1,9 @@
+-D LANGUAGE=en_us
+-D MESSAGESTYLE=neu
+-Fy obj -Fo obj
+-o games/noActions.t3
+-lib system
+-lib adv3/adv3
+-lib ../../modularExecuteCommand/modularExecuteCommand
+-lib ../keywordAction
+-source src/noActions.t
