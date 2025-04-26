@@ -21,6 +21,17 @@ class KeywordActionProdWithAmbiguousConj: CommandProdWithAmbiguousConj;
 
 class SingleKeywordProd: SingleNounProd;
 
+// A placeholder production to handle the silly corner case where the
+// keywordAction module has been compiled into a game that doesn't actually
+// use any keyword actions.  If that happens, then the compiler will complain
+// that there are no matches for keywordActionPredicate, so we hard-code
+// one here.
+grammar keywordActionPredicate(yzzyx)
+	: 'yzzyx'
+	: HelloAction
+	execAction() { defaultReport(&keywordActionPlaceholder); }
+;
+
 grammar keywordActionPhrase(definiteConj)
 	: keywordActionPredicate->cmd_
 		| keywordActionPredicate->cmd_ commandOnlyConjunction->conj_ *
@@ -38,13 +49,3 @@ grammar firstKeywordActionPhrase(commandOnly)
 	: FirstKeywordActionProd
 ;
 
-// A placeholder production to handle the silly corner case where the
-// keywordAction module has been compiled into a game that doesn't actually
-// use any keyword actions.  If that happens, then the compiler will complain
-// that there are no matches for keywordActionPredicate, so we hard-code
-// one here.
-grammar keywordActionPredicate(yzzyx)
-	: 'yzzyx'
-	: HelloAction
-	execAction() { defaultReport(&keywordActionPlaceholder); }
-;
